@@ -8,7 +8,7 @@ docker compose up --build
 ## 🔧 Локальный запуск
 ```bash
 make deps       # установить goose, mockery, golangci-lint
-make run        # go run ./cmd/api
+make up         # docker compose
 ```
 
 ## 🧪 Тесты
