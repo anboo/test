@@ -1,0 +1,99 @@
+version: "2"
+run:
+  concurrency: 4
+  build-tags:
+    - integration
+  issues-exit-code: 1
+  tests: true
+output:
+  formats:
+    text:
+      path: stderr
+      print-linter-name: true
+      print-issued-lines: true
+linters:
+  default: none
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - canonicalheader
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    - durationcheck
+    - errcheck
+    - errchkjson
+    - errname
+    - errorlint
+    - exhaustive
+    - exptostd
+    - fatcontext
+    - forcetypeassert
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gocritic
+    - godox
+    - gosec
+    - govet
+    - inamedparam
+    - ineffassign
+    - noctx
+    - paralleltest
+    - predeclared
+    - rowserrcheck
+    - sqlclosecheck
+    - staticcheck
+    - testifylint
+    - thelper
+    - unused
+  settings:
+    goconst:
+      min-len: 2
+      min-occurrences: 5
+    gosec:
+      excludes:
+        - G115
+    paralleltest:
+      ignore-missing: true
+      ignore-missing-subtests: true
+  exclusions:
+    generated: lax
+    rules:
+      - linters:
+          - errcheck
+          - goconst
+          - gocritic
+          - gosec
+          - noctx
+        path: (.+)_test.go
+      - linters:
+          - errcheck
+          - goconst
+          - gocritic
+          - gosec
+          - noctx
+        path: /internal/tests
+    paths:
+      - bin
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 100
+  max-same-issues: 4
+  new: false
+  skip-dirs-use-default: false
+formatters:
+  enable:
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - bin
+      - var
+      - tmp
+      - third_party$
+      - builtin$
+      - examples$

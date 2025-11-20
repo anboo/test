@@ -1,0 +1,163 @@
+@host = http://localhost:8080
+
+
+### 1. Alice creates question
+### @name createQuestion
+POST {{host}}/questions
+Authorization: Basic YWxpY2U6YWxpY2UxMjM=
+Content-Type: application/json
+
+{
+  "text": "hello world"
+}
+
+> {%
+    client.test("Alice can create question (201)", function() {
+        client.assert(response.status === 201);
+        client.assert(response.body.id > 0);
+    });
+    client.global.set("question_id", response.body.id);
+%}
+
+
+
+### 2. Bob creates answer to Alice question
+### @name createAnswer
+POST {{host}}/questions/{{question_id}}/answers
+Authorization: Basic Ym9iOmJvYjEyMw==
+Content-Type: application/json
+
+{
+  "text": "my answer"
+}
+
+> {%
+    client.test("Bob creates answer (201)", function() {
+        client.assert(response.status === 201);
+        client.assert(response.body.id > 0);
+    });
+    client.global.set("answer_id", response.body.id);
+%}
+
+
+
+### 3. Alice GET question with answers
+GET {{host}}/questions/{{question_id}}
+Authorization: Basic YWxpY2U6YWxpY2UxMjM=
+
+> {%
+    client.test("Alice fetches question (200)", function() {
+        client.assert(response.status === 200);
+        client.assert(response.body.id == client.global.get("question_id"));
+        client.assert(response.body.answers.length === 1);
+    });
+%}
+
+
+
+### 4. Bob GET question with answers
+GET {{host}}/questions/{{question_id}}
+Authorization: Basic Ym9iOmJvYjEyMw==
+
+> {%
+    client.test("Bob fetches question (200)", function() {
+        client.assert(response.status === 200);
+        client.assert(response.body.answers.length === 1);
+    });
+%}
+
+
+
+### 5. Alice GET answer
+GET {{host}}/answers/{{answer_id}}
+Authorization: Basic YWxpY2U6YWxpY2UxMjM=
+
+> {%
+    client.test("Alice reads Bob answer (200)", function() {
+        client.assert(response.status === 200);
+    });
+%}
+
+
+
+### 6. Bob GET answer
+GET {{host}}/answers/{{answer_id}}
+Authorization: Basic Ym9iOmJvYjEyMw==
+
+> {%
+    client.test("Bob reads own answer (200)", function() {
+        client.assert(response.status === 200);
+    });
+%}
+
+
+
+### 7. Alice tries deleting Bob’s answer → 403
+DELETE {{host}}/answers/{{answer_id}}
+Authorization: Basic YWxpY2U6YWxpY2UxMjM=
+
+> {%
+    client.test("Alice can't delete Bob's answer (403)", function() {
+        client.assert(response.status === 403);
+    });
+%}
+
+
+
+### 8. Bob deletes his answer → 204
+DELETE {{host}}/answers/{{answer_id}}
+Authorization: Basic Ym9iOmJvYjEyMw==
+
+> {%
+    client.test("Bob deletes own answer (204)", function() {
+        client.assert(response.status === 204);
+    });
+%}
+
+
+
+### 9. Bob deletes same answer again → 404
+DELETE {{host}}/answers/{{answer_id}}
+Authorization: Basic Ym9iOmJvYjEyMw==
+
+> {%
+    client.test("Deleting already deleted answer returns 404", function() {
+        client.assert(response.status === 404);
+    });
+%}
+
+
+
+### 10. Bob tries to delete Alice's question → 403
+DELETE {{host}}/questions/{{question_id}}
+Authorization: Basic Ym9iOmJvYjEyMw==
+
+> {%
+    client.test("Bob cannot delete Alice's question (403)", function() {
+        client.assert(response.status === 403);
+    });
+%}
+
+
+
+### 11. Alice deletes question → 204
+DELETE {{host}}/questions/{{question_id}}
+Authorization: Basic YWxpY2U6YWxpY2UxMjM=
+
+> {%
+    client.test("Alice deletes her question (204)", function() {
+        client.assert(response.status === 204);
+    });
+%}
+
+
+
+### 12. Alice deletes again → 404
+DELETE {{host}}/questions/{{question_id}}
+Authorization: Basic YWxpY2U6YWxpY2UxMjM=
+
+> {%
+    client.test("Deleting already deleted question (404)", function() {
+        client.assert(response.status === 404);
+    });
+%}
